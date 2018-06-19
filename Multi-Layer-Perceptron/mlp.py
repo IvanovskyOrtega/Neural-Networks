@@ -5,7 +5,7 @@ class MLP:
 
     def __init__(self,arch,tf):
         '''
-        Construnctor for the Multi Layer Perceptron
+        Constructor for the Multi Layer Perceptron
 
         Parameters
         -----------
