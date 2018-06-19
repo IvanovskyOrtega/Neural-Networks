@@ -70,6 +70,20 @@ class MLP:
            B.append(b)
         return B
 
-mlp = MLP([4,2,3],[1,2])
+    def set_training_set(self,patterns_file,targets_file):
+        '''
+        This function loads the training set from two separated files, one
+        for patterns, and one for targets.
+        The file must be a text file (.txt).
 
-        
+        Parameters
+        ----------
+        patterns_file: String
+            The filename or path of the patterns ".txt" file
+        targets_file: String
+            The filename or path of the tagets ".txt" file
+        '''
+        self.patterns = np.loadtxt(filename)
+        self.targets = np.loadtxt(filename)
+
+mlp = MLP([4,2,3],[1,2])
