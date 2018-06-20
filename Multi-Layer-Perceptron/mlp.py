@@ -3,7 +3,7 @@ import numpy as np
 class MLP:
     
 
-    def __init__(self,arch,tf):
+    def __init__(self,arch,tf,alpha,it_max,it_val,e_ap,e_val):
         '''
         Constructor for the Multi Layer Perceptron
 
@@ -15,12 +15,27 @@ class MLP:
             Defines the architecture (topology).
         tf: List
             A list which contains the transfer functions used for each layer.
+        alpha: float
+            The learning rate for the MLP.
+        it_max: int
+            Maximum number of epochs of the MLP.
+        it_val: int
+            How often an iteration of validation will be done.
+        e_ap: float
+            The minimum error per epoch in the learning process.
+        e_val: float
+            The minimum error in the validation test.
         '''
         self.arch = arch
         self.tf = tf
         self.R = arch[0]
         self.W = MLP.init_weights(arch)
         self.B = MLP.init_biases(arch)
+        self.alpha = alpha
+        self.it_max = it_max
+        self.it_val = it_val
+        self.e_ap = e_ap
+        self.e_val = e_val
 
 
     @classmethod
