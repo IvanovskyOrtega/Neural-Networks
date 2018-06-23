@@ -8,10 +8,10 @@ class MLP:
 
     mlp_learning_error = 0.0
     mlp_validation_error = 0.0
-    increments = 0.0
+    increments = 0
 
 
-    def __init__(self,arch,tf,alpha,it_max,it_val,learning_error,validation_error):
+    def __init__(self,arch,tf,alpha,it_max,it_val,learning_error,validation_error,max_inc):
         '''
         Constructor for the Multi Layer Perceptron
 
@@ -33,6 +33,8 @@ class MLP:
             The minimum error per epoch in the learning process.
         validation_error: float
             The minimum error in the validation test.
+        max_inc: int
+            The maximum number of consecutive increments in the validation error.
         '''
         self.arch = arch
         self.tf = tf
@@ -47,6 +49,7 @@ class MLP:
         self.it_val = it_val
         self.learning_error = learning_error
         self.validation_error = validation_error
+        self.max_inc = max_inc
 
 
     @classmethod
@@ -97,7 +100,7 @@ class MLP:
            B.append(b)
         return B
 
-    def set_training_set(self,patterns_file,targets_file):
+    def set_training_set(self,patterns_file,targets_file,t_set_percentage):
         '''
         This function loads the training set from two separated files, one
         for patterns, and one for targets.
@@ -109,9 +112,41 @@ class MLP:
             The filename or path of the patterns "*.txt" file
         targets_file: String
             The filename or path of the tagets "*.txt" file
+        config:
+            The configuration to generate the training and
+            evaluation sets.
         '''
-        self.patterns = np.transpose(np.loadtxt(patterns_file))
-        self.targets = np.transpose(np.loadtxt(targets_file))
+        patterns = np.transpose(np.loadtxt(patterns_file))
+        targets = np.transpose(np.loadtxt(targets_file))
+        self.patterns = patterns
+        self.targets = targets
+        num_patterns = patterns.shape[0]
+        t_set_elements = num_patterns*t_set_percentage//100
+        indexes = np.arange(num_patterns)
+        t_set = np.random.choice(indexes,t_set_elements,replace=False)
+        v_set = np.setdiff1d(indexes,t_set)
+        patterns_t = []
+        targets_t = []
+        patterns_v = []
+        targets_v = []
+        if len(patterns.shape) > 1:
+            for i in t_set:
+                patterns_t.append(patterns[:,i])
+                targets_t.append(targets[:,i])
+            for i in v_set:
+                patterns_v.append(patterns[:,i])
+                targets_v.append(targets[:,i])
+        else:
+            for i in t_set:
+                patterns_t.append(patterns[i])
+                targets_t.append(targets[i])
+            for i in v_set:
+                patterns_v.append(patterns[i])
+                targets_v.append(targets[i])
+        self.patterns_t = np.transpose(np.array(patterns_t))
+        self.targets_t = np.array(targets_t)
+        self.patterns_v = np.array(patterns_v)
+        self.targets_v = np.array(targets_v)
 
     @classmethod
     def transfer_function(cls,type,n):
@@ -144,19 +179,19 @@ class MLP:
         '''
         j = 0
         MLP.mlp_learning_error = 0.0
-        for pattern in self.patterns:
+        for pattern in self.patterns_t:
             a = pattern
             self.layer_output[0] = a
             for i in range(0,len(self.W)):
                 n = np.dot(self.W[i], a) + self.B[i]
                 a = MLP.transfer_function(self.tf[i],n)
                 self.layer_output[i+1] = a
-            error = (self.targets[j]-a)
+            error = (self.targets_t[j]-a)
             MLP.mlp_learning_error += error
             self.backpropagation(error)
             j += 1
         print('Error b: '+str(MLP.mlp_learning_error))
-        MLP.mlp_learning_error = MLP.mlp_learning_error / self.patterns.shape[0]
+        MLP.mlp_learning_error = MLP.mlp_learning_error / self.patterns_t.shape[0]
 
     def show_network_results(self):
         '''
@@ -166,7 +201,7 @@ class MLP:
         j = 0
         MLP.learning_error = 0.0
         outputs = []
-        for pattern in self.patterns:
+        for pattern in self.patterns_t:
             a = pattern
             for i in range(0,len(self.W)):
                 n = np.dot(self.W[i], a) + self.B[i]
@@ -176,16 +211,32 @@ class MLP:
         outputs = np.array(outputs)
         plt.plot(self.patterns,self.targets)
         plt.xlabel("Desired function")
-        plt.plot(self.patterns,outputs)
+        plt.scatter(self.patterns_t,outputs,color='red',edgecolors='black')
         plt.show()
 
 
     def validate(self):
-        print("I'm validating")
-    
+        v_error = 0.0
+        j = 0
+        for pattern in self.patterns_v:
+            a = pattern
+            for i in range(0,len(self.W)):
+                n = np.dot(self.W[i], a) + self.B[i]
+                a = MLP.transfer_function(self.tf[i],n)
+            error = (self.targets_v[j]-a)
+            v_error += error
+            j += 1
+        v_error = v_error / self.patterns_v.shape[0]
+        if v_error > MLP.mlp_validation_error:
+            MLP.increments += 1
+        else:
+            MLP.increments = 0
 
     def early_stopping(self):
-        print("Early Stopping")
+        if MLP.increments == self.max_inc:
+            return True
+        else:
+            return False
 
 
     def is_trained(self):
@@ -284,15 +335,17 @@ class MLP:
             print('Iteration: '+str(i+1))
             self.propagate_patterns()
             if(i % self.it_val):
-                self.validate() #
-                self.early_stopping() #
+                self.validate()
+                if self.early_stopping():
+                    print('Training finished by early stopping')
+                    break
             if self.is_trained():
                 print('The network had a successful training')
                 break
         if i == self.it_max:
             print("The network achieved it_max")
-        self.show_network_results() # 
+        self.show_network_results() 
 
-mlp = MLP([1,10,6,1],[2,1,3],0.2,1000,20,0.00000001,0.00000001)
-mlp.set_training_set("patterns.txt","targets.txt")
+mlp = MLP([1,10,6,1],[2,1,3],0.2,1000,200,0.00000001,0.00000001,4)
+mlp.set_training_set("patterns.txt","targets.txt",80)
 mlp.train()
