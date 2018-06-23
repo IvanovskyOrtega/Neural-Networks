@@ -6,12 +6,12 @@ import transferFunctions as tfun
 class MLP:
     
 
-    mlp_e_ap = 0.0
-    mlp_e_val = 0.0
+    mlp_learning_error = 0.0
+    mlp_validation_error = 0.0
     increments = 0.0
 
 
-    def __init__(self,arch,tf,alpha,it_max,it_val,e_ap,e_val):
+    def __init__(self,arch,tf,alpha,it_max,it_val,learning_error,validation_error):
         '''
         Constructor for the Multi Layer Perceptron
 
@@ -29,9 +29,9 @@ class MLP:
             Maximum number of epochs of the MLP.
         it_val: int
             How often an iteration of validation will be done.
-        e_ap: float
+        learning_error: float
             The minimum error per epoch in the learning process.
-        e_val: float
+        validation_error: float
             The minimum error in the validation test.
         '''
         self.arch = arch
@@ -45,8 +45,8 @@ class MLP:
         self.alpha = alpha
         self.it_max = it_max
         self.it_val = it_val
-        self.e_ap = e_ap
-        self.e_val = e_val
+        self.learning_error = learning_error
+        self.validation_error = validation_error
 
 
     @classmethod
@@ -114,28 +114,36 @@ class MLP:
         self.targets = np.transpose(np.loadtxt(targets_file))
 
     @classmethod
-    def transfer_function(cls,type,x):
+    def transfer_function(cls,type,n):
+        '''
+        This functions evaluates the value 'n' into its corresponding
+        transfer function according to the architecture previously 
+        defined.
+        Parameters
+        ----------
+        type: int
+            The type of transfer function:
+            1-logsig, 2-tansig, 3-purelin
+        n: Float, Array
+            The result of the operation (W*a + b)
+        Returns:
+            The value/array evaluated into the function.
+        '''
         if type == 1:
-            return tfun.logsig(x)
+            return tfun.logsig(n)
         elif type == 2:
-            return tfun.tansig(x)
+            return tfun.tansig(n)
         elif type == 3:
-            return tfun.purelin(x)
-        elif type == 4:
-            return tfun.hardlim(x)
-        elif type == 5:
-            return tfun.hardlims(x)
-        elif type == 6:
-            return tfun.satlin(x)
-        elif type == 7:
-            return tfun.satlins(x)
-        elif type == 8:
-            return tfun.poslin(x)
+            return tfun.purelin(n)
 
 
     def propagate_patterns(self):
+        '''
+        This functions propagates forward all the patterns of the training
+        set into all the layers of the network.
+        '''
         j = 0
-        MLP.mlp_e_ap = 0.0
+        MLP.mlp_learning_error = 0.0
         for pattern in self.patterns:
             a = pattern
             self.layer_output[0] = a
@@ -144,15 +152,19 @@ class MLP:
                 a = MLP.transfer_function(self.tf[i],n)
                 self.layer_output[i+1] = a
             error = (self.targets[j]-a)
-            MLP.mlp_e_ap += error
+            MLP.mlp_learning_error += error
             self.backpropagation(error)
             j += 1
-        print('Error b: '+str(MLP.mlp_e_ap))
-        MLP.mlp_e_ap = MLP.mlp_e_ap / self.patterns.shape[0]
+        print('Error b: '+str(MLP.mlp_learning_error))
+        MLP.mlp_learning_error = MLP.mlp_learning_error / self.patterns.shape[0]
 
     def show_network_results(self):
+        '''
+        This functions shows the performance of the network result of 
+        the training process.
+        '''
         j = 0
-        MLP.e_ap = 0.0
+        MLP.learning_error = 0.0
         outputs = []
         for pattern in self.patterns:
             a = pattern
@@ -177,15 +189,35 @@ class MLP:
 
 
     def is_trained(self):
-        print(np.sum(MLP.mlp_e_ap))
-        print(self.e_ap)
-        if np.sum(MLP.mlp_e_ap) < self.e_ap and np.sum(MLP.mlp_e_ap) >= 0:
+        '''
+        This function evaluates if the neural network is trained
+        (probably trained) according to the learning error value.
+        If the learning error (learning_error) is less than the
+        previosly defined value or it is greater or equal than 0
+        then, we can conclude the training process.
+        '''
+        if np.sum(MLP.mlp_learning_error) < self.learning_error and np.sum(MLP.mlp_learning_error) >= 0:
             return True
         else:
             return False
 
     @classmethod
     def get_transfer_function_derivative(cls,type,a):
+        '''
+        This function gets the derivative of the transfer function 
+        of a layer according to its output value (for fast
+        performance).
+        Parameters
+        ----------
+        type: int
+            The type of transfer function
+        a: float, array
+            The output value of the layer
+        Returns
+        -------
+        derivative: float, array
+            The derivative of the transfer function evaluated in a.
+        '''
         if np.isscalar(a):
             rows = 1
         else:
@@ -207,6 +239,14 @@ class MLP:
 
 
     def calculate_sensitivities(self,error):
+        '''
+        This function calculate the sensitivities of each layer used
+        in the backpropagation algorithm.
+        Parameters
+        ----------
+        error: float, array
+            The difference between the target and the network output.
+        '''
         M = self.layers-1
         F = MLP.get_transfer_function_derivative(self.tf[M],self.layer_output[M+1])
         self.S[M] = -2 * F * error
@@ -217,6 +257,10 @@ class MLP:
     
 
     def adjust_weights_and_biases(self):
+        '''
+        This function performs the learning process of the network (adjust
+        weights and biases for each layer). 
+        '''
         M = self.layers
         for m in range(0,M):
             a_t = np.transpose(self.layer_output[m])
@@ -225,10 +269,17 @@ class MLP:
 
 
     def backpropagation(self,error):
+        '''
+        This function corresponds to the learning rule of the network
+        aka Backpropgation.
+        '''
         self.calculate_sensitivities(error)
         self.adjust_weights_and_biases()
 
     def train(self):
+        '''
+        This function performs the training process of the network.
+        '''
         for i in range(0,self.it_max):
             print('Iteration: '+str(i+1))
             self.propagate_patterns()
