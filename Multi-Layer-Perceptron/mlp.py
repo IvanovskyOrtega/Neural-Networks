@@ -1,6 +1,7 @@
 import numpy as np
 from matplotlib import cm
 import matplotlib.pyplot as plt
+import transferFunctions as tfun
 
 class MLP:
     
@@ -115,11 +116,21 @@ class MLP:
     @classmethod
     def transfer_function(cls,type,x):
         if type == 1:
-            return 1 / (1 + np.exp(-x))
+            return tfun.logsig(x)
         elif type == 2:
-            return ( np.exp(x) - np.exp(-x) ) / ( np.exp(x) + np.exp(-x) )
+            return tfun.tansig(x)
         elif type == 3:
-            return x
+            return tfun.purelin(x)
+        elif type == 4:
+            return tfun.hardlim(x)
+        elif type == 5:
+            return tfun.hardlims(x)
+        elif type == 6:
+            return tfun.satlin(x)
+        elif type == 7:
+            return tfun.satlins(x)
+        elif type == 8:
+            return tfun.poslin(x)
 
 
     def propagate_patterns(self):
@@ -231,6 +242,6 @@ class MLP:
             print("The network achieved it_max")
         self.show_network_results() # 
 
-mlp = MLP([1,6,4,4,1],[2,2,1,3],0.2,5000,20,0.00000001,0.00000001)
+mlp = MLP([1,10,6,1],[2,1,3],0.2,1000,20,0.00000001,0.00000001)
 mlp.set_training_set("patterns.txt","targets.txt")
 mlp.train()
