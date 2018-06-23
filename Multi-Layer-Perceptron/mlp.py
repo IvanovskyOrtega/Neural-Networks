@@ -340,7 +340,7 @@ class MLP:
         '''
         for i in range(0,self.it_max):
             self.propagate_patterns()
-            if(i % self.it_val):
+            if (i % self.it_val) == 0:
                 self.validate()
                 if self.early_stopping():
                     print('Iteration: '+str(i+1))
