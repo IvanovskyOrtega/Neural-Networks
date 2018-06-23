@@ -1,4 +1,5 @@
 import numpy as np
+import pickle as pkl
 from matplotlib import cm
 import matplotlib.pyplot as plt
 import transferFunctions as tfun
@@ -352,6 +353,51 @@ class MLP:
         if i == self.it_max-1:
             print("The network achieved it_max")
         self.show_network_results() 
+
+
+    def feed_forward_propagate(self,input_pattern):
+        '''
+        This function propagates an input into a previously trained MLP
+        to see the performance of the network.
+        Parameters
+        ----------
+        input_pattern: Float, Array
+            The pattern to test within the network.
+        '''
+        a = input_pattern
+        for i in range(0,len(self.W)):
+            n = np.dot(self.W[i], a) + self.B[i]
+            a = MLP.transfer_function(self.tf[i],n)
+        print('The output of the network: '+str(a))
+
+    
+    def save_network(self,filename):
+        '''
+        This function saves the trained network and writes it to a file
+        for further testing or application using Pickler.
+        Parameters
+        ----------
+        filename: String
+            The name of the file to save the network. It will overwrite if
+            exist, so be careful!
+        '''
+        with open(filename, 'wb') as output:
+            pkl.dump(self, output, pkl.HIGHEST_PROTOCOL)
+
+
+    @classmethod
+    def load_network(cls,filename):
+        '''
+        This function loads a trained network from a file using Pickler.
+        Parameters
+        ----------
+        filename: String
+            The name of the file in which the network was saved.
+        '''
+        trained_network = None
+        with open(filename, 'rb') as input:
+            trained_network = pkl.load(input)
+        return trained_network
 
 if __name__ == '__main__':
     print('Check test_mlp.py for usage, or read the Documentation.')
