@@ -73,7 +73,6 @@ class MLP:
         for i in range(1,len(arch)):
            w = np.random.random((arch[i],arch[i-1]))
            W.append(w)
-           print(w)
         return W 
     
 
@@ -190,7 +189,6 @@ class MLP:
             MLP.mlp_learning_error += error
             self.backpropagation(error)
             j += 1
-        print('Error b: '+str(MLP.mlp_learning_error))
         MLP.mlp_learning_error = MLP.mlp_learning_error / self.patterns_t.shape[0]
 
     def show_network_results(self):
@@ -206,7 +204,7 @@ class MLP:
             for i in range(0,len(self.W)):
                 n = np.dot(self.W[i], a) + self.B[i]
                 a = MLP.transfer_function(self.tf[i],n)
-            print('Pattern: '+str(pattern)+', Output: '+str(a))
+            # print('Pattern: '+str(pattern)+', Output: '+str(a))
             outputs.append(a[0])
         outputs = np.array(outputs)
         plt.plot(self.patterns,self.targets)
@@ -332,20 +330,20 @@ class MLP:
         This function performs the training process of the network.
         '''
         for i in range(0,self.it_max):
-            print('Iteration: '+str(i+1))
             self.propagate_patterns()
             if(i % self.it_val):
                 self.validate()
                 if self.early_stopping():
+                    print('Iteration: '+str(i+1))
                     print('Training finished by early stopping')
                     break
             if self.is_trained():
+                print('Iteration: '+str(i+1))
                 print('The network had a successful training')
                 break
-        if i == self.it_max:
+        if i == self.it_max-1:
             print("The network achieved it_max")
         self.show_network_results() 
 
-mlp = MLP([1,10,6,1],[2,1,3],0.2,1000,200,0.00000001,0.00000001,4)
-mlp.set_training_set("patterns.txt","targets.txt",80)
-mlp.train()
+if __name__ == '__main__':
+    print('Check test_mlp.py for usage, or read the Documentation.')
