@@ -214,6 +214,10 @@ class MLP:
 
 
     def validate(self):
+        '''
+        This functions performs an iteration of validation
+        through all the elements of the validation set.
+        '''
         v_error = 0.0
         j = 0
         for pattern in self.patterns_v:
@@ -231,6 +235,10 @@ class MLP:
             MLP.increments = 0
 
     def early_stopping(self):
+        '''
+        This function verifies if the early stopping condition is
+        satisfied.
+        '''
         if MLP.increments == self.max_inc:
             return True
         else:
