@@ -1,6 +1,6 @@
+from matplotlib import cm
 import numpy as np
 import pickle as pkl
-from matplotlib import cm
 import matplotlib.pyplot as plt
 import transferFunctions as tfun
 
@@ -53,8 +53,8 @@ class MLP:
         self.max_inc = max_inc
 
 
-    @classmethod
-    def init_weights(cls,arch):
+    @staticmethod
+    def init_weights(arch):
         '''
         This function initialize all the weight matrices of the MLP.
 
@@ -77,8 +77,8 @@ class MLP:
         return W 
     
 
-    @classmethod
-    def init_biases(cls,arch):
+    @staticmethod
+    def init_biases(arch):
         '''
         This function initialize all the bias vectors of the MLP.
 
@@ -148,8 +148,8 @@ class MLP:
         self.patterns_v = np.array(patterns_v)
         self.targets_v = np.array(targets_v)
 
-    @classmethod
-    def transfer_function(cls,type,n):
+    @staticmethod
+    def transfer_function(type,n):
         '''
         This functions evaluates the value 'n' into its corresponding
         transfer function according to the architecture previously 
@@ -259,8 +259,8 @@ class MLP:
         else:
             return False
 
-    @classmethod
-    def get_transfer_function_derivative(cls,type,a):
+    @staticmethod
+    def get_transfer_function_derivative(type,a):
         '''
         This function gets the derivative of the transfer function 
         of a layer according to its output value (for fast
@@ -385,8 +385,8 @@ class MLP:
             pkl.dump(self, output, pkl.HIGHEST_PROTOCOL)
 
 
-    @classmethod
-    def load_network(cls,filename):
+    @staticmethod
+    def load_network(filename):
         '''
         This function loads a trained network from a file using Pickler.
         Parameters
