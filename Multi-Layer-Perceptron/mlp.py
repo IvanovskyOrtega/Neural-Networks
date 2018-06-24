@@ -67,12 +67,12 @@ class MLP:
         ----------
         W: List
             A list which contains the weight matrices for each layer.
-            The values for each entry of the matrix are random numbers 
-            between 0 and 1.
+            The values for each entry of the matrix are random uniform
+            numbers between -1 and 1.
         '''
         W = []
         for i in range(1,len(arch)):
-           w = np.random.random((arch[i],arch[i-1]))
+           w = np.random.uniform(-1,1,(arch[i],arch[i-1]))
            W.append(w)
         return W 
     
@@ -91,12 +91,12 @@ class MLP:
         ----------
         B: List
             A list which contains the bias vectors for each layer.
-            The values for each element in the vector are random numbers 
-            between 0 and 1.
+            The values for each element in the vector are random uniform 
+            numbers between -1 and 1.
         '''
         B = []
         for i in range(1,len(arch)):
-           b = np.random.random((arch[i],1))
+           b = np.random.uniform(-1,1,(arch[i],1))
            B.append(b)
         return B
 
