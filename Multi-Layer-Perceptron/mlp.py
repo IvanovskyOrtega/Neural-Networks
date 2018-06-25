@@ -138,16 +138,24 @@ class MLP:
         if len(patterns.shape) > 1:
             for i in t_set:
                 patterns_t.append(patterns[:,i])
-                targets_t.append(targets[i])
             for i in v_set:
                 patterns_v.append(patterns[:,i])
-                targets_v.append(targets[i])
         else:
             for i in t_set:
                 patterns_t.append(patterns[i])
-                targets_t.append(targets[i])
             for i in v_set:
                 patterns_v.append(patterns[i])
+        if len(targets.shape) > 1:
+            self.targets_size = targets.shape[0]
+            for i in t_set:
+                targets_t.append(targets[:,i])
+            for i in v_set:
+                targets_v.append(targets[:,i])
+        else:
+            self.targets_size = 1
+            for i in t_set:
+                targets_t.append(targets[i])
+            for i in v_set:
                 targets_v.append(targets[i])
         self.patterns_t = np.array(patterns_t)
         self.targets_t = np.array(targets_t)
@@ -194,7 +202,9 @@ class MLP:
                 n = np.dot(self.W[i], a) + self.B[i]
                 a = MLP.transfer_function(self.tf[i],n)
                 self.layer_output[i+1] = a
-            error = (self.targets_t[j]-a)
+            target = self.targets_t[j]
+            target.shape = (self.targets_size ,1)
+            error = target-a
             MLP.mlp_learning_error += error
             self.backpropagation(error)
             j += 1
@@ -245,6 +255,31 @@ class MLP:
         plt.show()
 
 
+    @staticmethod
+    def decode_class(class_vector):
+        '''
+        This function decodes a given vector into a class, considering
+        the vector as a binary string. For instance 00010 is the class
+        2.
+        Parameters
+        ----------
+        class_vector: array
+            The class vector to decode.
+        Returns
+        ----------
+        decoded_class: Float
+            The closest float number to an integer class.
+        '''
+        pow = class_vector.shape[0]-1
+        decoded_class = 0.0
+        for b in class_vector:
+            decoded_class += b * np.power(2,pow)
+            pow -= 1
+        return decoded_class
+
+
+
+
     def plot_classif(self):
         '''
         This function plots the result of the network as a classifier.
@@ -259,7 +294,9 @@ class MLP:
         test_set = np.c_[xx.ravel(), yy.ravel()]
         Z = []
         for element in test_set:
-            Z.append(self.feed_forward_propagate(element))
+            network_output = self.feed_forward_propagate(element)
+            decoded_class = MLP.decode_class(network_output)
+            Z.append(decoded_class)
         Z = np.array(Z)
         Z = Z.reshape(xx.shape)
         plt.contourf(xx, yy, Z, cmap=plt.cm.plasma)
@@ -365,7 +402,7 @@ class MLP:
         '''
         M = self.layers-1
         F = MLP.get_transfer_function_derivative(self.tf[M],self.layer_output[M+1])
-        self.S[M] = -2 * F * error
+        self.S[M] = -2 * np.dot(F, error)
         for m in range(M-1,-1,-1):
             F = MLP.get_transfer_function_derivative(self.tf[m],self.layer_output[m+1])
             W_T = np.transpose(self.W[m+1])
