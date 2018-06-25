@@ -203,7 +203,6 @@ class MLP:
                 a = MLP.transfer_function(self.tf[i],n)
                 self.layer_output[i+1] = a
             target = self.targets_t[j]
-            target.shape = (self.targets_size ,1)
             error = target-a
             MLP.mlp_learning_error += error
             self.backpropagation(error)
