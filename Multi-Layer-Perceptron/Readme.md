@@ -5,3 +5,8 @@ It only works with 2D data, so, for function aproximation the training set must 
 classifier, it must be as (X,Y) = Z.
 
 As soon as I finish this mini project, I'll add more documentation.
+
+## MLP Function Aproximator
+![alt text](https://github.com/IvanovskyOrtega/Neural-Networks/blob/master/Multi-Layer-Perceptron/mlp_function_aproximator.png)
+## MLP Classifier
+![alt text](https://github.com/IvanovskyOrtega/Neural-Networks/blob/master/Multi-Layer-Perceptron/mlp_classifier.png)
