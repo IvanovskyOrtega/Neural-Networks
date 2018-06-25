@@ -8,5 +8,7 @@ As soon as I finish this mini project, I'll add more documentation.
 
 ## MLP Function Aproximator
 ![alt text](https://github.com/IvanovskyOrtega/Neural-Networks/blob/master/Multi-Layer-Perceptron/mlp_function_aproximator.png)
-## MLP Classifier
+## MLP Classifier (XOR classification)
 ![alt text](https://github.com/IvanovskyOrtega/Neural-Networks/blob/master/Multi-Layer-Perceptron/mlp_classifier.png)
+## MLP Classifier (4 classes)
+![alt text](https://github.com/IvanovskyOrtega/Neural-Networks/blob/master/Multi-Layer-Perceptron/mlp_classifier_4_classes.png)
