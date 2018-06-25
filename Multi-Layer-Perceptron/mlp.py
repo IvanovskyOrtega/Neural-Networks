@@ -296,6 +296,8 @@ class MLP:
         This function verifies if the early stopping condition is
         satisfied.
         '''
+        if self.t_set_percentage == 100:
+            return False
         if MLP.increments == self.max_inc:
             return True
         else:
