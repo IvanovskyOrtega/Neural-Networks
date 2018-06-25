@@ -118,15 +118,14 @@ class MLP:
         '''
         patterns = np.transpose(np.loadtxt(patterns_file))
         targets = np.transpose(np.loadtxt(targets_file))
-        for pattern in patterns:
-            if len(pattern.shape) > 1:
-                pattern.shape = (pattern.shape[0],1)
         self.patterns = patterns
         self.targets = targets
         self.t_set_percentage = t_set_percentage
         if len(patterns.shape) > 1:
+            self.pattern_size = 2
             num_patterns = patterns.shape[1]
         else:
+            self.pattern_size = 1
             num_patterns = patterns.shape[0]
         t_set_elements = num_patterns*t_set_percentage//100
         indexes = np.arange(num_patterns)
@@ -188,6 +187,8 @@ class MLP:
         MLP.mlp_learning_error = 0.0
         for pattern in self.patterns_t:
             a = pattern
+            if self.pattern_size == 2:
+                a.shape = (a.shape[0],1)
             self.layer_output[0] = a
             for i in range(0,len(self.W)):
                 n = np.dot(self.W[i], a) + self.B[i]
@@ -216,6 +217,8 @@ class MLP:
         outputs = []
         for pattern in self.patterns_t:
             a = pattern
+            if self.pattern_size == 2:
+                a.shape = (a.shape[0],1)
             for i in range(0,len(self.W)):
                 n = np.dot(self.W[i], a) + self.B[i]
                 a = MLP.transfer_function(self.tf[i],n)
@@ -274,6 +277,8 @@ class MLP:
         j = 0
         for pattern in self.patterns_v:
             a = pattern
+            if self.pattern_size == 2:
+                a.shape = (a.shape[0],1)
             for i in range(0,len(self.W)):
                 n = np.dot(self.W[i], a) + self.B[i]
                 a = MLP.transfer_function(self.tf[i],n)
@@ -390,7 +395,6 @@ class MLP:
         This function performs the training process of the network.
         '''
         for i in range(0,self.it_max):
-            print('Iteration: '+str(i))
             self.propagate_patterns()
             if (i % self.it_val) == 0:
                 self.validate()
@@ -416,6 +420,8 @@ class MLP:
             The pattern to test within the network.
         '''
         a = input_pattern
+        if self.pattern_size == 2:
+            a.shape = (a.shape[0],1)
         for i in range(0,len(self.W)):
             n = np.dot(self.W[i], a) + self.B[i]
             a = MLP.transfer_function(self.tf[i],n)
