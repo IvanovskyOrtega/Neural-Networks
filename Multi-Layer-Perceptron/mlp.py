@@ -67,8 +67,8 @@ class MLP:
         ----------
         W: List
             A list which contains the weight matrices for each layer.
-            The values for each entry of the matrix are random uniform
-            numbers between -1 and 1.
+            The values for each entry of the matrix are random numbers 
+            between 0 and 1.
         '''
         W = []
         for i in range(1,len(arch)):
@@ -91,8 +91,8 @@ class MLP:
         ----------
         B: List
             A list which contains the bias vectors for each layer.
-            The values for each element in the vector are random uniform 
-            numbers between -1 and 1.
+            The values for each element in the vector are random numbers 
+            between 0 and 1.
         '''
         B = []
         for i in range(1,len(arch)):
@@ -118,9 +118,16 @@ class MLP:
         '''
         patterns = np.transpose(np.loadtxt(patterns_file))
         targets = np.transpose(np.loadtxt(targets_file))
+        for pattern in patterns:
+            if len(pattern.shape) > 1:
+                pattern.shape = (pattern.shape[0],1)
         self.patterns = patterns
         self.targets = targets
-        num_patterns = patterns.shape[0]
+        self.t_set_percentage = t_set_percentage
+        if len(patterns.shape) > 1:
+            num_patterns = patterns.shape[1]
+        else:
+            num_patterns = patterns.shape[0]
         t_set_elements = num_patterns*t_set_percentage//100
         indexes = np.arange(num_patterns)
         t_set = np.random.choice(indexes,t_set_elements,replace=False)
@@ -132,10 +139,10 @@ class MLP:
         if len(patterns.shape) > 1:
             for i in t_set:
                 patterns_t.append(patterns[:,i])
-                targets_t.append(targets[:,i])
+                targets_t.append(targets[i])
             for i in v_set:
                 patterns_v.append(patterns[:,i])
-                targets_v.append(targets[:,i])
+                targets_v.append(targets[i])
         else:
             for i in t_set:
                 patterns_t.append(patterns[i])
@@ -143,7 +150,7 @@ class MLP:
             for i in v_set:
                 patterns_v.append(patterns[i])
                 targets_v.append(targets[i])
-        self.patterns_t = np.transpose(np.array(patterns_t))
+        self.patterns_t = np.array(patterns_t)
         self.targets_t = np.array(targets_t)
         self.patterns_v = np.array(patterns_v)
         self.targets_v = np.array(targets_v)
@@ -192,10 +199,17 @@ class MLP:
             j += 1
         MLP.mlp_learning_error = MLP.mlp_learning_error / self.patterns_t.shape[0]
 
-    def show_network_results(self):
+    def show_network_results(self,type):
         '''
         This functions shows the performance of the network result of 
         the training process.
+        Parameters
+        ----------
+        type: String
+            Indicates if the MLP was used for classification or as a
+            function aproximator. Posible options:
+                - classif : Indicates classificaction.
+                - faprox : Indicates function aproximator.
         '''
         j = 0
         MLP.learning_error = 0.0
@@ -208,17 +222,54 @@ class MLP:
             # print('Pattern: '+str(pattern)+', Output: '+str(a))
             outputs.append(a[0])
         outputs = np.array(outputs)
-        plt.plot(self.patterns,self.targets)
-        plt.xlabel("Desired function")
+        if type == 'classif':
+            self.plot_classif()
+        elif type == 'faprox':
+            self.plot_function(outputs)
+
+
+    def plot_function(self,outputs):
+        '''
+        This function plots the target output vs the output of the network.
+        Parameters
+        ----------
+        outputs: Array
+            The array of results of the network.
+        '''
+        plt.title("MLP Function Aproximator")
+        plt.plot(self.patterns,self.targets,color='black')
         plt.scatter(self.patterns_t,outputs,color='red',edgecolors='black')
         plt.show()
 
+
+    def plot_classif(self):
+        '''
+        This function plots the result of the network as a classifier.
+        It plots the input patterns as scatter and the fronter boundaries
+        as lines.
+        '''
+        plt.title("MLP Classifier")
+        plt.grid(color='gray', linestyle='-', linewidth=0.5)
+        x_min, x_max = self.patterns_t[:, 0].min() - 1, self.patterns_t[:, 0].max() + 1
+        y_min, y_max = self.patterns_t[:, 1].min() - 1, self.patterns_t[:, 1].max() + 1
+        xx, yy = np.meshgrid(np.arange(x_min, x_max, 0.02),np.arange(y_min, y_max, 0.02))
+        test_set = np.c_[xx.ravel(), yy.ravel()]
+        Z = []
+        for element in test_set:
+            Z.append(self.feed_forward_propagate(element))
+        Z = np.array(Z)
+        Z = Z.reshape(xx.shape)
+        plt.contourf(xx, yy, Z, cmap=plt.cm.plasma)
+        plt.scatter(self.patterns_t[:,0],self.patterns_t[:,1],color='red',edgecolors='black')
+        plt.show()
 
     def validate(self):
         '''
         This functions performs an iteration of validation
         through all the elements of the validation set.
         '''
+        if self.t_set_percentage == 100:
+            return
         v_error = 0.0
         j = 0
         for pattern in self.patterns_v:
@@ -339,6 +390,7 @@ class MLP:
         This function performs the training process of the network.
         '''
         for i in range(0,self.it_max):
+            print('Iteration: '+str(i))
             self.propagate_patterns()
             if (i % self.it_val) == 0:
                 self.validate()
@@ -352,7 +404,6 @@ class MLP:
                 break
         if i == self.it_max-1:
             print("The network achieved it_max")
-        self.show_network_results() 
 
 
     def feed_forward_propagate(self,input_pattern):
@@ -368,7 +419,7 @@ class MLP:
         for i in range(0,len(self.W)):
             n = np.dot(self.W[i], a) + self.B[i]
             a = MLP.transfer_function(self.tf[i],n)
-        print('The output of the network: '+str(a))
+        return a
 
     
     def save_network(self,filename):
@@ -398,6 +449,7 @@ class MLP:
         with open(filename, 'rb') as input:
             trained_network = pkl.load(input)
         return trained_network
+        
 
 if __name__ == '__main__':
     print('Check test_mlp.py for usage, or read the Documentation.')
