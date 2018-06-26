@@ -12,3 +12,4 @@ As soon as I finish this mini project, I'll add more documentation.
 ![alt text](https://github.com/IvanovskyOrtega/Neural-Networks/blob/master/Multi-Layer-Perceptron/mlp_classifier.png)
 ## MLP Classifier (4 classes)
 ![alt text](https://github.com/IvanovskyOrtega/Neural-Networks/blob/master/Multi-Layer-Perceptron/mlp_classifier_4_classes.png)
+![alt text](https://github.com/IvanovskyOrtega/Neural-Networks/blob/master/Multi-Layer-Perceptron/mlp_classifier_4_classes_2.png)
