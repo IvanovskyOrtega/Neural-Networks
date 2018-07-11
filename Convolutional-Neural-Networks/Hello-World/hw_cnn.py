@@ -2,9 +2,6 @@ from keras.datasets import mnist
 from keras import models
 from keras import layers
 from keras.utils import to_categorical
-from PIL import Image 
-import numpy as np
-import sys
 
 # Loading the MNIST dataset in Keras
 (train_images, train_labels), (test_images, test_labels) = mnist.load_data()
